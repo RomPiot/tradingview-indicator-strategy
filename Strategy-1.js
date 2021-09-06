@@ -1,30 +1,15 @@
 
 //@version=4
-strategy("Strategy 1", overlay=true, margin_long=0, margin_short=0, process_orders_on_close=true)
+strategy("Strategy 1", overlay=true, margin_long=0, margin_short=0, process_orders_on_close=false)
 
 //═════ CUSTOMIZATION ═════
 
-iop_chartcolor = input(defval="Light",     title="Chart Type ?",       type=input.string, options=['Light','Dark'], group="Chart Customization")
-iop_cuscolor   = input(defval=false,       title="Use Custom Colors?", type=input.bool,                             group="Chart Customization")
-iop_highcolor  = input(defval=color.red,   title="High Zones Color",   type=input.color,  inline='customcolor',     group="Chart Customization")
-iop_lowcolor   = input(defval=color.green, title="Low Zones Color",    type=input.color,  inline='customcolor',     group="Chart Customization")
+iop_highcolor  = input(defval=color.gray,   title="High Zones Color",   type=input.color,  inline='customcolor')
+iop_lowcolor   = input(defval=color.gray, title="Low Zones Color",    type=input.color,  inline='customcolor')
 
-//Background Color Function
-
-get_black_or_white_color() =>
-    iop_black_or_white = color(na)
-
-    if (iop_chartcolor == "Dark")
-        iop_black_or_white := color(color.white)
-    else
-        iop_black_or_white := color(color.black)
-
-    iop_black_or_white
-
-iop_highzonescolor  = color(na)
-iop_lowzonescolor   = color(na)
-iop_highzonescolor := iop_cuscolor ? iop_highcolor : get_black_or_white_color()
-iop_lowzonescolor  := iop_cuscolor ? iop_lowcolor  : get_black_or_white_color()
+// Background Color Function
+iop_highzonescolor = iop_highcolor
+iop_lowzonescolor  = iop_lowcolor
 
 ////////////////////////////
 //        OrderBlock      //
@@ -36,12 +21,11 @@ iop_obtype     = input(defval="Price Action", title="OB Detection Type",        
 iop_obline     = input(defval=true,           title="Display OB Lines",            type=input.bool,                                         group="OrderBlock Settings",          tooltip="Displays White Line (by default) according to detected OrderBlock Candle. These lines can indicate a potential recovery area.")
 iop_fullzones  = input(defval=false,          title="Full OB Range?",              type=input.bool,                                         group="OrderBlock Settings")
 iop_linestyle  = input(defval="Solid",        title="Style",                       type=input.string,  options=['Solid','Dotted','Dashed'], group="OrderBlock Settings",          inline='lines')
-iop_linessize  = input(defval=2,              title="Size",                        type=input.integer, minval=1, maxval=2,                  group="OrderBlock Settings",          inline='lines')
+iop_linessize  = input(defval=2,              title="Taille",                      type=input.integer, minval=1, maxval=2,                  group="OrderBlock Settings",          inline='lines')
 iop_maxlines   = input(defval=10,             title="Maximum Lines Displayed",     type=input.integer, minval=1, maxval=100,                group="OrderBlock Settings")
-iop_extend     = input(defval=false,          title="Extend Lines?",               type=input.bool,                                         group="OrderBlock Settings",          tooltip="Extend all Lines with more transparency on them. This can be usefull to see area already recovered while keeping in mind that they can still have an impact on the current Trend even if they are less important.")
-iop_transp     = input(defval=50,             title="Extended Lines Transparency", type=input.integer, minval=1, maxval=100,                group="OrderBlock Settings")
+iop_extend     = input(defval=false,          title="Etendre les lignes ?",        type=input.bool,                                         group="OrderBlock Settings",          tooltip="Extend all Lines with more transparency on them. This can be usefull to see area already recovered while keeping in mind that they can still have an impact on the current Trend even if they are less important.")
 iop_showprice  = input(defval=true,           title="Show Last Levels Price?",     type=input.bool,                                         group="OrderBlock Settings")
-iop_usewick    = input(defval=true,           title="Use Wick?",                   type=input.bool,                                         group="OrderBlock Settings")
+iop_usewick    = input(defval=false,           title="Utiliser les mèches ?",      type=input.bool,                                         group="OrderBlock Settings")
 iop_wickperc   = input(defval=100,            title="Wick Percentage",             type=input.integer, minval=1, maxval=100,                group="OrderBlock Settings",          tooltip="Candle Wick Percentage to be taken into account (100 = Disabled).")
 iop_showlabels = input(defval=true,           title="Show OrderBlock Labels?",     type=input.bool,                                         group="OrderBlock Settings",          tooltip="Will display a «Red Arrow» for Bearish OrderBlock and a «Green Arrow» for Bullish OrderBlock. Note that you should not in any way interpret these «Arrows» as Signals to Buy or Sell.")
 iop_delay      = input(defval=5,              title="Price Action Offset",         type=input.integer, minval=1,                            group="Advanced OrderBlock Settings", tooltip="Number of Subsequent Candles to count to search for the potential OrderBlock. (Price Action must be selected in the «OB Detection Type» scrolling menu)")
@@ -106,8 +90,11 @@ if iop_bullpa
 
 //Price Labels Conditions
 
+var iop_is_change_bearpaprice = change(iop_bearpaprice)
+var iop_is_change_bullpaprice = change(iop_bullpaprice)
+
 if iop_obtype == "Price Action" and iop_showtost
-    l = change(iop_bearpaprice) ? label.new(iop_bar_index_, iop_bearpaprice[1]+0.01, tostring(round_f(iop_bearpaprice)), color=color.new(color.red, 100), textcolor=color.red, style=label.style_labeldown, yloc=yloc.abovebar, size=size.small) : change(iop_bullpaprice) ? label.new(iop_bar_index_, iop_bullpaprice[1]-0.01, tostring(round_f(iop_bullpaprice)), color=color.new(color.green, 100), textcolor=color.green, style=label.style_labelup, yloc=yloc.belowbar, size=size.small) : na
+    l = iop_is_change_bearpaprice ? label.new(iop_bar_index_, iop_bearpaprice[1]+0.01, tostring(round_f(iop_bearpaprice)), color=color.new(color.red, 100), textcolor=color.red, style=label.style_labeldown, yloc=yloc.abovebar, size=size.small) : iop_is_change_bullpaprice ? label.new(iop_bar_index_, iop_bullpaprice[1]-0.01, tostring(round_f(iop_bullpaprice)), color=color.new(color.green, 100), textcolor=color.green, style=label.style_labelup, yloc=yloc.belowbar, size=size.small) : na
 
 //═════ Volume ═════
 
@@ -127,11 +114,13 @@ iop_volbulldir = close > open
 
 iop_bearvol = iop_volbeardir and iop_absrange and iop_cum ? -1 : 0
 iop_bullvol = iop_volbulldir and iop_absrange and iop_cum ?  1 : 0
+var iop_is_crossunder_bearvol = crossunder(iop_bearvol, 0)
+var iop_is_crossunder_bullvol = crossover(iop_bullvol, 0)
 
 //Price Labels Conditions
 
 if iop_obtype == "Volume" and iop_showtost
-    l = crossunder(iop_bearvol, 0) ? label.new(bar_index, iop_bearvol[1]+0.01, tostring(round(iop_vabs)), color=color.new(color.red, 100), textcolor=color.red, style=label.style_labeldown, yloc=yloc.abovebar, size=size.small) : crossover(iop_bullvol, 0) ? label.new(bar_index, iop_bullvol[1]-0.01, tostring(round(iop_vabs)), color=color.new(color.green, 100), textcolor=color.green, style=label.style_labelup, yloc=yloc.belowbar, size=size.small) : na
+    l = iop_is_crossunder_bearvol ? label.new(bar_index, iop_bearvol[1]+0.01, tostring(round(iop_vabs)), color=color.new(color.red, 100), textcolor=color.red, style=label.style_labeldown, yloc=yloc.abovebar, size=size.small) : iop_is_crossunder_bullvol ? label.new(bar_index, iop_bullvol[1]-0.01, tostring(round(iop_vabs)), color=color.new(color.green, 100), textcolor=color.green, style=label.style_labelup, yloc=yloc.belowbar, size=size.small) : na
 
 //OB Type Conditions
 
@@ -178,10 +167,10 @@ var label   iop_fbullcandlelowarray  = na
 
 var box[] iop_bearboxarray       = array.new_box()
 var box[] iop_bullboxarray       = array.new_box()
-var color iop_bearboxcolor       = color.new(iop_callpivhighc, iop_transp)
-var color iop_bullboxcolor       = color.new(iop_callpivlowc,  iop_transp)
-var color iop_bearborderboxcolor = color.new(iop_callpivhighc, iop_transp)
-var color iop_bullborderboxcolor = color.new(iop_callpivlowc,  iop_transp)
+var color iop_bearboxcolor       = color.new(iop_callpivhighc, 100)
+var color iop_bullboxcolor       = color.new(iop_callpivlowc, 100)
+var color iop_bearborderboxcolor = color.new(iop_callpivhighc, 100)
+var color iop_bullborderboxcolor = color.new(iop_callpivlowc, 100)
 
 //tine Styles Function
 
@@ -405,7 +394,6 @@ bool iop_marker3Up  = na
 bool iop_marker3Dn  = na
 
 //Plotting
-
 if barstate.isrealtime
     table iop__tape = table.new("middle" + "_" + "right", 3, iop_i_tapeLinesMax + 3)
     if barstate.isnew or na(iop_lastPrice)
