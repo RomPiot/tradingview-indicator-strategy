@@ -19,21 +19,18 @@ iop_lowzonescolor  = iop_lowcolor
 
 iop_obtype     = input(defval="Price Action", title="OB Detection Type",           type=input.string,  options=['Price Action','Volume'],   group="OrderBlock Settings",          tooltip="OrderBlocks are areas where Banks take a Short or Long position. So they create a movement that they would like to hide from us, but luckily for us they cannot. Take the example of Banks opening Short position for x reason. The Trend is already Bearish. The Price will fall and then make a Reversal (most often to the price where they opened their positions) and it is at this precise moment that they will again resume a Short position twice as large because for the moment, following this example it is not in their interest that the Price exceeds a certain Price since they are Seller. As a result they create a solid Resistance (the strongest it is). There are several ways to interpret this logic, we can try to follow the movement of Banks or on the contrary take advantage of the recovery of the course.")
 iop_obline     = input(defval=true,           title="Display OB Lines",            type=input.bool,                                         group="OrderBlock Settings",          tooltip="Displays White Line (by default) according to detected OrderBlock Candle. These lines can indicate a potential recovery area.")
-iop_fullzones  = input(defval=false,          title="Full OB Range?",              type=input.bool,                                         group="OrderBlock Settings")
 iop_linestyle  = input(defval="Solid",        title="Style",                       type=input.string,  options=['Solid','Dotted','Dashed'], group="OrderBlock Settings",          inline='lines')
 iop_linessize  = input(defval=2,              title="Taille",                      type=input.integer, minval=1, maxval=2,                  group="OrderBlock Settings",          inline='lines')
 iop_maxlines   = input(defval=10,             title="Maximum Lines Displayed",     type=input.integer, minval=1, maxval=100,                group="OrderBlock Settings")
 iop_extend     = input(defval=false,          title="Etendre les lignes ?",        type=input.bool,                                         group="OrderBlock Settings",          tooltip="Extend all Lines with more transparency on them. This can be usefull to see area already recovered while keeping in mind that they can still have an impact on the current Trend even if they are less important.")
 iop_showprice  = input(defval=true,           title="Show Last Levels Price?",     type=input.bool,                                         group="OrderBlock Settings")
 iop_usewick    = input(defval=false,           title="Utiliser les mèches ?",      type=input.bool,                                         group="OrderBlock Settings")
-iop_wickperc   = input(defval=100,            title="Wick Percentage",             type=input.integer, minval=1, maxval=100,                group="OrderBlock Settings",          tooltip="Candle Wick Percentage to be taken into account (100 = Disabled).")
-iop_showlabels = input(defval=true,           title="Show OrderBlock Labels?",     type=input.bool,                                         group="OrderBlock Settings",          tooltip="Will display a «Red Arrow» for Bearish OrderBlock and a «Green Arrow» for Bullish OrderBlock. Note that you should not in any way interpret these «Arrows» as Signals to Buy or Sell.")
+iop_active     = input(defval=true,           title="Activer ?",                   type=input.bool,                                         group="OrderBlock Settings")
 iop_delay      = input(defval=5,              title="Price Action Offset",         type=input.integer, minval=1,                            group="Advanced OrderBlock Settings", tooltip="Number of Subsequent Candles to count to search for the potential OrderBlock. (Price Action must be selected in the «OB Detection Type» scrolling menu)")
 iop_vr         = input(defval=89,             title="Volume Ratio",                type=input.integer, minval=1,                            group="Advanced OrderBlock Settings", tooltip="Highest Volume Ratio to search for the potential OrderBlock. (Volume must be selected in the «OB Detection Type» scrolling menu)")
 iop_showtost   = input(defval=false,          title="Show Price/Ratio Labels?",    type=input.bool,                                         group="Advanced OrderBlock Settings", tooltip="Will display the Price or the Volume Ratio as Labels on detected OrderBlock Candles according to the selected option in the «OB Detection Type» scrolling menu (Price Action or Volume).")
 
 //Color Call Function
-
 f_obcallc(obcolor, _call) =>
     c1 = color.r(obcolor)
     c2 = color.g(obcolor)
@@ -70,7 +67,7 @@ for i = 1 to iop_delay
 
 //Price Action Calculation
 
-iop_abs       = iop_usewick ? abs(open[iop_offset] - close[iop_offset]) / abs(high[iop_offset] - low[iop_offset]) <= iop_wickperc / 100 : ((abs(close[iop_offset] - close[1])) / close[iop_offset]) * 100
+iop_abs       = iop_usewick ? abs(open[iop_offset] - close[iop_offset]) / abs(high[iop_offset] - low[iop_offset]) <= 100 / 100 : ((abs(close[iop_offset] - close[1])) / close[iop_offset]) * 100
 iop_pabeardir = close[iop_offset] > open[iop_offset]
 iop_pabulldir = close[iop_offset] < open[iop_offset]
 
@@ -100,7 +97,7 @@ if iop_obtype == "Price Action" and iop_showtost
 
 //Volume Calculation
 
-iop_absrange   = iop_usewick ? abs(open - close) / abs(high - low) <= iop_wickperc / 100 : ((abs(close - close[1])) / close) * 100
+iop_absrange   = iop_usewick ? abs(open - close) / abs(high - low) <= 100 / 100 : ((abs(close - close[1])) / close) * 100
 iop_hv         = highest(volume, iop_vr)
 iop_vabs       = volume * 100 / iop_hv * 4 / 5
 iop_smoothing  = ema(iop_vabs, 21)
@@ -182,7 +179,6 @@ f_linestyle(_style) =>
 if iop_pivothigh and iop_obline
     iop_bearcandlehigh       := iop_obtype == 'Price Action' ? iop_usewick ? iop_high_ : iop_close_ : iop_obtype == "Volume" ? iop_usewick ? iop_high_ : iop_open_ : na
     iop_bearcandlelow        := iop_close_ < iop_open_ ? iop_close_ : iop_open_
-    iop_bearcandlelowarea    := iop_fullzones ? line.new(iop_bar_index_, iop_bearcandlelow,  bar_index, iop_bearcandlelow,  width=iop_linessize) : na
     iop_bearcandlehigharea   := iop_pivtrue   ? line.new(iop_bar_index_, iop_bearcandlehigh, bar_index, iop_bearcandlehigh, width=iop_linessize) : line.new(iop_bar_index_, (iop_bearcandlehigh + iop_bearcandlelow) / 2, bar_index, (iop_bearcandlehigh + iop_bearcandlelow) / 2, width=iop_linessize)
     iop_fbearcandlehigharray := iop_showprice ? label.new(bar_index, iop_pivtrue ? iop_bearcandlehigh : (iop_bearcandlehigh + iop_bearcandlelow) / 2, text=tostring(bar_index - iop_bar_index_), textcolor=iop_callpivhighc, style=label.style_none) : na
     iop_bearbox               = box.new(iop_bar_index_, iop_extend ? iop_bearcandlehigh : na, bar_index, iop_extend ? iop_bearcandlehigh : na, bgcolor=iop_bearboxcolor, border_style=line.style_dotted, border_color=iop_bearborderboxcolor)
@@ -228,7 +224,6 @@ if array.size(iop_bearcandlelowline) > 0
 if iop_pivotlow and iop_obline
     iop_bullcandlelow       := iop_obtype == 'Price Action' ? iop_usewick ? iop_low_ : iop_close_ : iop_obtype == "Volume" ? iop_usewick ? iop_low_ : iop_open_ : na
     iop_bullcandlehigh      := iop_close_ < iop_open_ ? iop_open_ : iop_close_
-    iop_bullcandlehigharea  := iop_fullzones ? line.new(iop_bar_index_, iop_bullcandlehigh, bar_index, iop_bullcandlehigh, width=iop_linessize) : na
     iop_bullcandlelowarea   := iop_pivtrue   ? line.new(iop_bar_index_, iop_bullcandlelow,  bar_index, iop_bullcandlelow,  width=iop_linessize) : line.new(iop_bar_index_, (iop_bullcandlehigh + iop_bullcandlelow) / 2, bar_index, (iop_bullcandlehigh + iop_bullcandlelow) / 2, width=iop_linessize)
     iop_fbullcandlelowarray := iop_showprice ? label.new(bar_index, iop_pivtrue ? iop_bullcandlelow : (iop_bullcandlehigh + iop_bullcandlelow) / 2 , text=tostring(bar_index - iop_bar_index_), textcolor=iop_callpivlowc, style=label.style_none) : na
     iop_bullbox              = box.new(iop_bar_index_, iop_extend ? iop_bullcandlelow : na, bar_index, iop_extend ? iop_bullcandlelow : na, bgcolor=iop_bullboxcolor, border_style=line.style_dotted, border_color=iop_bullborderboxcolor)
@@ -271,8 +266,8 @@ if array.size(iop_bullcandlelowline) > 0
 
 //Plotting
 
-plotshape(iop_showlabels ? iop_pivothigh : na, title="Bearish OrderBlock", style=shape.triangledown, location=location.abovebar, color=color.new(color.red,   0), size=size.tiny, offset=iop_po)
-plotshape(iop_showlabels ? iop_pivotlow  : na, title="Bullish OrderBlock", style=shape.triangleup,   location=location.belowbar, color=color.new(color.green, 0), size=size.tiny, offset=iop_po)
+plotshape(iop_active ? iop_pivothigh : na, title="Bearish OrderBlock", style=shape.triangledown, location=location.abovebar, color=color.new(color.red,   0), size=size.tiny, offset=iop_po)
+plotshape(iop_active ? iop_pivotlow  : na, title="Bullish OrderBlock", style=shape.triangleup,   location=location.belowbar, color=color.new(color.green, 0), size=size.tiny, offset=iop_po)
 barcolor(iop_obc, offset=iop_po)
 
 //═════ OrderBooks ═════ - Original Script : ('Tape') By [LucF] => https://www.tradingview.com/script/8mVFTxPg-Tape-LucF/
