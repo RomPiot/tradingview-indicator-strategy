@@ -1,29 +1,29 @@
 //@version=2
 
-strategy("Heikin Ashi Strategy", shorttitle="HA Strategy", overlay=true)
+strategy("Strategie Heikin Ashi", shorttitle="HA Strategie", overlay=true)
 
-fromDay = input(title="From day", defval=1)
-fromMonth = input(title="From month", defval=1)
-fromYear = input(title="From year", defval=2021)
-toDay = input(title="To day", defval=31)
-toMonth = input(title="To month", defval=12)
-toYear = input(title="To year", defval=2021)
+fromDay = input(title="Date de début de test", defval=1)
+fromMonth = input(title="Mois de début de test", defval=1)
+fromYear = input(title="Année de début de test", defval=2021)
+toDay = input(title="Jour de fin de test", defval=31)
+toMonth = input(title="Mois de fin de test", defval=12)
+toYear = input(title="Année de fin de test", defval=2021)
 
 startDate = timestamp(fromYear, fromMonth, fromDay, 00, 00)
 endDate = timestamp(toYear, toMonth, toDay, 00, 00)
 time_cond = time >= startDate and time <= endDate
  
-res = input(title="Heikin Ashi Candle Time Frame", type=resolution, defval="5")
+res = input(title="Durée des bougies Heikin Ashi", type=resolution, defval="1")
 hshift = input(1,title="Heikin Ashi Candle Time Frame Shift")
 res1 = input(title="Heikin Ashi EMA Time Frame", type=resolution, defval="240")
 mhshift = input(0,title="Heikin Ashi EMA Time Frame Shift")
 fama = input(1,"Heikin Ashi EMA Period")
 test = input(1,"Heikin Ashi EMA Shift")
-sloma = input(30,"Slow EMA Period")
+sloma = input(21,"Slow EMA Period")
 slomas = input(1,"Slow EMA Shift")
 logtransform = input(false, "Log Transform")
-stoploss = input(true, "Stop Loss")
-showplots = input(true, "Show Plots")
+stoploss = input(true, "Mettre des Stop Loss")
+showplots = input(true, "Afficher les lignes")
 
 ha_t = heikinashi(tickerid)
 ha_close = security(ha_t, res, logtransform ? log(close[hshift]) : close[hshift])
