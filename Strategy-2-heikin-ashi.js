@@ -44,25 +44,28 @@ plot(showplots ? (logtransform ? exp(sma) : sma) : na, title="SMA", color=#ff6a0
 golong = crossover(fma, sma)
 goshort = crossunder(fma, sma)
 
-
 // Determine where you've entered and in what direction
 longStop = strategy.position_avg_price * (1 - stopLossPercent)
 shortStop = strategy.position_avg_price * (1 + stopLossPercent)
 shortTake = strategy.position_avg_price * (1 - takeProfitPercent)
 longTake = strategy.position_avg_price * (1 + takeProfitPercent)
 
+// If in range time selected by user
 if (time_condition)
-
+    
+    // Take Profit and Stop Loss
     strategy.entry("LONG", strategy.long, when=golong)
     strategy.entry("SHORT", strategy.short, when=goshort)
 
+    // Take Profit and Stop Loss orders
     if strategy.position_size > 0 
-        strategy.exit(id="Close Long", stop=longStop, limit=longTake)
+        strategy.exit(id = "Close Long", stop = longStop, limit = longTake)
+       
     if strategy.position_size < 0 
         strategy.exit(id="Close Short", stop=shortStop, limit=shortTake)
-
-// PLOT FIXED SLTP LINE
-plot(strategy.position_size > 0 ? longStop : na, color=red, linewidth=1, title="Long Fixed SL")
-plot(strategy.position_size < 0 ? shortStop : na, color=red, linewidth=1, title="Short Fixed SL")
-plot(strategy.position_size > 0 ? longTake : na, color=green, linewidth=1, title="Long Take Profit")
-plot(strategy.position_size < 0 ? shortTake : na, color=green, linewidth=1, title="Short Take Profit")
+    
+// Take Profit and Stop Loss graph
+plot(strategy.position_size > 0 ? longStop : na, style=linebr, color=#FF0404, linewidth=2, title="Long Stop Loss")
+plot(strategy.position_size > 0 ? longTake : na, style=linebr, color=#37FF37, linewidth=2, title="Long Take Profit")
+plot(strategy.position_size < 0 ? shortStop : na, style=linebr, color=#FF0404, linewidth=2, title="Short Stop Loss")
+plot(strategy.position_size < 0 ? shortTake : na, style=linebr, color=#37FF37, linewidth=2, title="Short Take Profit")
