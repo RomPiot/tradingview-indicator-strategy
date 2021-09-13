@@ -1,4 +1,4 @@
-//@version=2
+//@version=4
 
 strategy("Strategie Heikin Ashi", shorttitle="HA Strategie", overlay=true)
 
@@ -8,11 +8,11 @@ fromYear = input(title="Année de début de test", defval=2021)
 toDay = input(title="Jour de fin de test", defval=31)
 toMonth = input(title="Mois de fin de test", defval=12)
 toYear = input(title="Année de fin de test", defval=2021)
-stopLossPercent = input(title="Stop Loss (%)", type=float, minval=0.0, step=0.1, defval=3) / 100
-takeProfitPercent = input(title="Take Profit (%)", type=float, minval=0.0, step=0.1, defval=25) / 100
+stopLossPercent = input(title="Stop Loss (%)", type=input.float, minval=0.0, step=0.1, defval=3.0) / 100
+takeProfitPercent = input(title="Take Profit (%)", type=input.float, minval=0.0, step=0.1, defval=25) / 100
 // leverageEffect = input(title="Effet de levier", minval=0, step=1, defval=0)
-res = input(title="Durée des bougies Heikin Ashi", type=resolution, defval="15")
-res1 = input(title="Heikin Ashi EMA Time Frame", type=resolution, defval="240")
+res = input(title="Durée des bougies Heikin Ashi", type=input.resolution, defval="15")
+res1 = input(title="Heikin Ashi EMA Time Frame", type=input.resolution, defval="240")
 // fama = input(1,"Heikin Ashi EMA Period")
 sloma = input(21,"Slow EMA Period")
 // slomas = input(1,"Slow EMA Shift")
@@ -31,15 +31,15 @@ test = 0
 longStopPrice = 0
 shortStopPrice = 0
 
-ha_t = heikinashi(tickerid)
-ha_close = security(ha_t, res, logtransform ? log(close[hshift]) : close[hshift])
-mha_close = security(ha_t, res1, logtransform ? log(close[mhshift]) : close[mhshift])
+ha_t = heikinashi(syminfo.tickerid)
+ha_close = security(ha_t, res, logtransform ? log(close[hshift]) : close[hshift], barmerge.gaps_off, barmerge.lookahead_on)
+mha_close = security(ha_t, res1, logtransform ? log(close[mhshift]) : close[mhshift], barmerge.gaps_off, barmerge.lookahead_on)
 
 fma = ema(mha_close[test], fama)
 sma = ema(ha_close[slomas], sloma)
 
-plot(showplots ? (logtransform ? exp(fma) : fma) : na, title="MA", color=#0094ff, linewidth=2, style=line)
-plot(showplots ? (logtransform ? exp(sma) : sma) : na, title="SMA", color=#ff6a00, linewidth=2, style=line)
+plot(showplots ? (logtransform ? exp(fma) : fma) : na, title="MA", color=#0094ff, linewidth=2, style= plot.style_line)
+plot(showplots ? (logtransform ? exp(sma) : sma) : na, title="SMA", color=#ff6a00, linewidth=2, style= plot.style_line)
 
 golong = crossover(fma, sma)
 goshort = crossunder(fma, sma)
@@ -58,14 +58,14 @@ if (time_condition)
     strategy.entry("SHORT", strategy.short, when=goshort)
 
     // Take Profit and Stop Loss orders
-    if strategy.position_size > 0 
+    if strategy.position_size > 0  
         strategy.exit(id = "Close Long", stop = longStop, limit = longTake)
        
     if strategy.position_size < 0 
         strategy.exit(id="Close Short", stop=shortStop, limit=shortTake)
     
 // Take Profit and Stop Loss graph
-plot(strategy.position_size > 0 ? longStop : na, style=linebr, color=#FF0404, linewidth=2, title="Long Stop Loss")
-plot(strategy.position_size > 0 ? longTake : na, style=linebr, color=#37FF37, linewidth=2, title="Long Take Profit")
-plot(strategy.position_size < 0 ? shortStop : na, style=linebr, color=#FF0404, linewidth=2, title="Short Stop Loss")
-plot(strategy.position_size < 0 ? shortTake : na, style=linebr, color=#37FF37, linewidth=2, title="Short Take Profit")
+plot(strategy.position_size > 0 ? longStop : na, style= plot.style_linebr, color=#FF0404, linewidth=2, title="Long Stop Loss")
+plot(strategy.position_size > 0 ? longTake : na, style= plot.style_linebr, color=#37FF37, linewidth=2, title="Long Take Profit")
+plot(strategy.position_size < 0 ? shortStop : na, style= plot.style_linebr, color=#FF0404, linewidth=2, title="Short Stop Loss")
+plot(strategy.position_size < 0 ? shortTake : na, style= plot.style_linebr, color=#37FF37, linewidth=2, title="Short Take Profit")
