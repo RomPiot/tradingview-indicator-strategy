@@ -1,45 +1,39 @@
 //@version=4
 
-strategy("Strategie Heikin Ashi", shorttitle="HA Strategie", overlay=true)
+strategy("Strategie Heikin Ashi", shorttitle="HA Strategie", overlay=true, initial_capital=1000, format=format.price, currency=currency.USD, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
 
-fromDay = input(title="Date de début de test", defval=1)
-fromMonth = input(title="Mois de début de test", defval=1)
-fromYear = input(title="Année de début de test", defval=2021)
-toDay = input(title="Jour de fin de test", defval=31)
-toMonth = input(title="Mois de fin de test", defval=12)
-toYear = input(title="Année de fin de test", defval=2021)
-stopLossPercent = input(title="Stop Loss (%)", type=input.float, minval=0.0, step=0.1, defval=3.0) / 100
-takeProfitPercent = input(title="Take Profit (%)", type=input.float, minval=0.0, step=0.1, defval=25) / 100
-// leverageEffect = input(title="Effet de levier", minval=0, step=1, defval=0)
-res = input(title="Durée des bougies Heikin Ashi", type=input.resolution, defval="15")
-res1 = input(title="Heikin Ashi EMA Time Frame", type=input.resolution, defval="240")
-// fama = input(1,"Heikin Ashi EMA Period")
-sloma = input(21,"Slow EMA Period")
-// slomas = input(1,"Slow EMA Shift")
-logtransform = input(true, "Log Transform")
-showplots = input(true, "Afficher les lignes")
+fromDay = input(title="Jour", defval=1, group="Date de début", inline="date_start")
+fromMonth = input(title="Mois", defval=1, group="Date de début", inline="date_start")
+fromYear = input(title="Année", defval=2021, group="Date de début", inline="date_start")
+toDay = input(title="Jour", defval=31, group="Date de fin", inline="date_end")
+toMonth = input(title="Mois", defval=12, group="Date de fin", inline="date_end")
+toYear = input(title="Année", defval=2021, group="Date de fin", inline="date_end")
+
+stopLossPercent = input(title="Stop Loss (%)", type=input.integer, minval=0, step=1, defval=5, group="SL & TP", inline="sl_tp") / 100
+takeProfitPercent = input(title="Take Profit (%)", type=input.integer, minval=0, step=1, defval=25, group="SL & TP", inline="sl_tp") / 100
+
+res = input(title="Durée des bougies", type=input.resolution, defval="15")
+res1 = input(title="Période de temps de l'EMA Heikin Ashi", type=input.resolution, defval="240")
+slowEmaTimeframe = input(20,"Période de l'EMA lente")
+logTransform = input(true, "Log Transform")
+showPlots = input(true, "Afficher les lignes")
 
 startDate = timestamp(fromYear, fromMonth, fromDay, 00, 00)
 endDate = timestamp(toYear, toMonth, toDay, 00, 00)
-time_condition = time >= startDate and time <= endDate
+isInDate = time >= startDate and time <= endDate
 
-fama = 1
-slomas = 1
-hshift = 0
-mhshift = 0
-test = 0
 longStopPrice = 0
 shortStopPrice = 0
 
-ha_t = heikinashi(syminfo.tickerid)
-ha_close = security(ha_t, res, logtransform ? log(close[hshift]) : close[hshift], barmerge.gaps_off, barmerge.lookahead_on)
-mha_close = security(ha_t, res1, logtransform ? log(close[mhshift]) : close[mhshift], barmerge.gaps_off, barmerge.lookahead_on)
+heikinAshi_Ticker = heikinashi(syminfo.tickerid)
+heikinAshi_close = security(heikinAshi_Ticker, res, logTransform ? log(close[0]) : close[0], barmerge.gaps_off, barmerge.lookahead_on)
+m_heikinAshi_close = security(heikinAshi_Ticker, res1, logTransform ? log(close[0]) : close[0], barmerge.gaps_off, barmerge.lookahead_on)
 
-fma = ema(mha_close[test], fama)
-sma = ema(ha_close[slomas], sloma)
+fma = ema(m_heikinAshi_close[0], 1) // green
+sma = ema(heikinAshi_close[1], slowEmaTimeframe) // red
 
-plot(showplots ? (logtransform ? exp(fma) : fma) : na, title="MA", color=#0094ff, linewidth=2, style= plot.style_line)
-plot(showplots ? (logtransform ? exp(sma) : sma) : na, title="SMA", color=#ff6a00, linewidth=2, style= plot.style_line)
+plot(showPlots ? (logTransform ? exp(fma) : fma) : na, title="MA", color=#43CA02, linewidth=2, style=plot.style_line)
+plot(showPlots ? (logTransform ? exp(sma) : sma) : na, title="SMA", color=#FF110B, linewidth=2, style=plot.style_line)
 
 golong = crossover(fma, sma)
 goshort = crossunder(fma, sma)
@@ -51,7 +45,7 @@ shortTake = strategy.position_avg_price * (1 - takeProfitPercent)
 longTake = strategy.position_avg_price * (1 + takeProfitPercent)
 
 // If in range time selected by user
-if (time_condition)
+if (isInDate)
     
     // Take Profit and Stop Loss
     strategy.entry("LONG", strategy.long, when=golong)
@@ -59,13 +53,13 @@ if (time_condition)
 
     // Take Profit and Stop Loss orders
     if strategy.position_size > 0  
-        strategy.exit(id = "Close Long", stop = longStop, limit = longTake)
+        strategy.exit(id = "Close Long", stop=longStop, limit=longTake)
        
     if strategy.position_size < 0 
         strategy.exit(id="Close Short", stop=shortStop, limit=shortTake)
     
-// Take Profit and Stop Loss graph
-plot(strategy.position_size > 0 ? longStop : na, style= plot.style_linebr, color=#FF0404, linewidth=2, title="Long Stop Loss")
-plot(strategy.position_size > 0 ? longTake : na, style= plot.style_linebr, color=#37FF37, linewidth=2, title="Long Take Profit")
-plot(strategy.position_size < 0 ? shortStop : na, style= plot.style_linebr, color=#FF0404, linewidth=2, title="Short Stop Loss")
-plot(strategy.position_size < 0 ? shortTake : na, style= plot.style_linebr, color=#37FF37, linewidth=2, title="Short Take Profit")
+// Take Profit and Stop Loss bar
+plot(strategy.position_size > 0 ? longStop : na, style=plot.style_linebr, color=#FF0404, linewidth=2, title="Long Stop Loss")
+plot(strategy.position_size > 0 ? longTake : na, style=plot.style_linebr, color=#37FF37, linewidth=2, title="Long Take Profit")
+plot(strategy.position_size < 0 ? shortStop : na, style=plot.style_linebr, color=#FF0404, linewidth=2, title="Short Stop Loss")
+plot(strategy.position_size < 0 ? shortTake : na, style=plot.style_linebr, color=#37FF37, linewidth=2, title="Short Take Profit")

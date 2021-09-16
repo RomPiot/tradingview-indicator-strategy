@@ -12,7 +12,7 @@ stopLossPercent = input(title="Stop Loss (%)", type=input.float, minval=0.0, ste
 takeProfitPercent = input(title="Take Profit (%)", type=input.float, minval=0.0, step=0.1, defval=25) / 100
 // leverageEffect = input(title="Effet de levier", minval=0, step=1, defval=0)
 candleTimeframe = input(title="Période de temps de l'Heikin Ashi", type=input.resolution, defval="1")
-emaTimeframe = input(title="Période de temps de l'EMA Heikin Ashi EMA", type=input.resolution, defval="240")
+emaTimeframe = input(title="Période de temps de l'EMA Heikin Ashi", type=input.resolution, defval="240")
 slowEmaTimeframe = input(21,"Période de temps de l'EMA lente")
 logTransform = input(true, "Log Transform")
 showPlots = input(true, "Afficher les lignes")
