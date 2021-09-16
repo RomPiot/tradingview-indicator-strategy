@@ -13,7 +13,7 @@ takeProfitPercent = input(title="Take Profit (%)", type=input.integer, minval=0,
 
 // Getting inputs
 fast_length = input(title="Fast Length", type=input.integer, defval=1, group="Configuration")
-slow_length = input(title="Slow Length", type=input.integer, defval=21, group="Configuration")
+slow_length = input(title="Slow Length", type=input.integer, defval=20, group="Configuration")
 // src = input(title="Source", type=input.source, defval=close, group="Configuration") 
 // macd_length = input(title="Taille du MACD", type=input.integer, minval = 1, maxval = 50, defval = 9, group="Configuration")
 // sma_source = input(title="Oscillator MA Type", type=input.string, defval="EMA", options=["SMA", "EMA"], group="Configuration")
