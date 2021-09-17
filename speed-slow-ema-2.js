@@ -2,7 +2,7 @@
 strategy(title="Speed & Slow EMA", shorttitle="S&S EMA", overlay=false, initial_capital=1000, format=format.price, currency=currency.USD, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
 
 // Dates 
-startDate = input(defval=timestamp("01 Jan 2021 00:00 +0000"), title="Start Time", type=input.time, group="Dates")
+startDate = input(defval=timestamp("01 Sep 2021 00:00 +0000"), title="Start Time", type=input.time, group="Dates")
 endDate = input(defval=timestamp("01 Jan 2022 00:00 +0000"), title="End Time", type=input.time)
 time_condition = time >= startDate and time <= endDate
 
@@ -11,7 +11,7 @@ takeProfitPercent = input(title="Take Profit (%)", type=input.integer, minval=0,
 
 // Getting inputs
 fast_length = input(title="Fast Length", type=input.integer, defval=1, group="Configuration")
-slow_length = input(title="Slow Length", type=input.integer, defval=21, group="Configuration")
+slow_length = input(title="Slow Length", type=input.integer, defval=20, group="Configuration")
 // src = input(title="Source", type=input.source, defval=close, group="Configuration") 
 // macd_length = input(title="Taille du MACD", type=input.integer, minval = 1, maxval = 50, defval = 9, group="Configuration")
 // sma_source = input(title="Oscillator MA Type", type=input.string, defval="EMA", options=["SMA", "EMA"], group="Configuration")
@@ -22,6 +22,13 @@ src = close
 macd_length = 9
 sma_source = "EMA"
 sma_signal = "EMA"
+
+// Heikin Ashi bar 
+// haClose = (open + high + low + close) / 4
+// haOpen = float(na)
+// haOpen := na(haOpen[1]) ? (open + close) / 2 : (nz(haOpen[1]) + nz(haClose[1])) / 2
+// haHigh = max(high, max(haOpen, haClose))
+// haLow = min(low, min(haOpen, haClose))
 
 // Plot colors
 col_macd = input(#5BFC0E, "MACD Line", input.color, group="Color Settings", inline="MACD")
