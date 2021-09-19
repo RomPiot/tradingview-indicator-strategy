@@ -1,5 +1,5 @@
 //@version=4
-strategy(title="Speed & Slow EMA", shorttitle="S&S EMA", overlay=true, initial_capital=1000, format=format.price, currency=currency.USD, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
+strategy(title="Speed & Slow EMA", shorttitle="S&S EMA", precision=2, overlay=true, initial_capital=1000, format=format.price, currency=currency.USD, default_qty_type=strategy.percent_of_equity, default_qty_value=100)
 
 // Dates 
 startDate = input(defval=timestamp("01 Sep 2021 00:00 +0000"), title="Start Time", type=input.time, group="Dates")
@@ -61,16 +61,18 @@ entryPrice = valuewhen(strategy.opentrades == 1, strategy.position_avg_price, 0)
 
 // TODO : Trouver une facon de ne pas passer d'ordre si c'est dans un range
 
+f_round(nb) => round((nb * 100)) / 100
+
 if (time_condition)
     // Take Profit and Stop Loss
-    strategy.entry("LONG", strategy.long, when=longSignal, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
-    strategy.entry("SHORT", strategy.short, when=shortSignal, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
+    strategy.entry("LONG - " + tostring(f_round(open)), strategy.long, when=longSignal, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
+    strategy.entry("SHORT - " + tostring(f_round(open)), strategy.short, when=shortSignal, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
      
     // Take Profit and Stop Loss orders
     if strategy.position_size > 0  
-        strategy.exit(id = "Close Long", stop=longStop, limit=longTake, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
+        strategy.exit(id = "Close Long - " + tostring(f_round(open)), stop=longStop, limit=longTake, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
         // strategy.close_all(when = src > entryPrice, comment = "Close Long by Short signal - " + tostring(src), alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
 
     if strategy.position_size < 0
-        strategy.exit(id="Close Short", stop=shortStop, limit=shortTake, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
+        strategy.exit(id="Close Short - " + tostring(f_round(open)), stop=shortStop, limit=shortTake, alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
         // strategy.close_all(when = src > entryPrice, comment = "Close Long by Short signal - " + tostring(src), alert_message="{{strategy.order.action}} au prix de {{strategy.order.price}} effectué sur {{ticker}}.")
