@@ -24,10 +24,10 @@ heikinAshi_close = security(heikinAshi_Ticker, timeframe.period, logTransform ? 
 m_heikinAshi_close = security(heikinAshi_Ticker, res1, logTransform ? log(close[0]) : close[0], barmerge.gaps_off, barmerge.lookahead_on)
 
 greenEma = ema(m_heikinAshi_close[0], speedEmaTimeframe) // green
-redEma = ema(heikinAshi_close[1], slowEmaTimeframe) // red
+redEma = ema(heikinAshi_close[1], slowEmaTimeframe) // red 
 
 plot(showPlots ? (logTransform ? exp(greenEma) : greenEma) : na, title="MA", color=#43CA02, linewidth=2, style=plot.style_line)
-plot(showPlots ? (logTransform ? exp(redEma) : redEma) : na, title="redEma", color=#FF110B, linewidth=2, style=plot.style_line)
+plot(showPlots ? (logTransform ? exp(redEma) : redEma) : na, title="redEma", color=#FBC02D, linewidth=2, style=plot.style_line)
 
 golong = crossover(greenEma, redEma)
 goshort = crossunder(greenEma, redEma)
