@@ -1,6 +1,6 @@
 //@version=4
 
-study("Strategie Heikin Ashi", shorttitle="HA Strategie", overlay=true)
+study("Strategie Heikin Ashi", shorttitle="HA", overlay=true)
 
 fromDay = input(title="Date de début de test", defval=1)
 fromMonth = input(title="Mois de début de test", defval=1)

@@ -1,5 +1,5 @@
 //@version=4
-study(title="RSI", shorttitle="RSI", format=format.price, precision=2, resolution="")
+study(title="Second Indicators", shorttitle="SI", format=format.price, precision=2, resolution="")
 
 soc_active  = input(true, title="Activer le Sochastique")
 rsi_active  = input(true, title="Activer le RSI")

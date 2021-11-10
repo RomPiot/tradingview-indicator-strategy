@@ -1,6 +1,3 @@
-// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
-// © rompiotcrypto
-
 // @version=4
 strategy("Strategy 1", overlay=true, margin_long=0, margin_short=0, process_orders_on_close=true)
 
