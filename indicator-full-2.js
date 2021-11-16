@@ -2,29 +2,60 @@
 indicator(title="Indicator Full 2", shorttitle="IF", format=format.price, precision=2)
 
 rsi_active  = input.bool(true, title="Activer le RSI")
+marketcap_rsi_active  = input.bool(true, title="Activer le RSI Marketcap")
 macd_active  = input.bool(true, title="Activer le MACD")
 soc_active  = input.bool(true, title="Activer le Stochastique")
 flow_active  = input.bool(true, title="Activer le Volume Flow")
-marketcap_rsi_active  = input.bool(true, title="Activer le Marketcap RSI")
 marketcap_oscillator_active  = input.bool(true, title="Activer le Marketcap Oscillator")
 color_high_low  = input(#9C27B0, "Couleur des bandes hautes et basse")
 color_middle  = input(#BA68C8, "Couleur centrale")
 
 
+securityNoRepaint(sym, tf, src) =>
+    request.security(sym, tf, src[barstate.isrealtime ? 1 : 0])[barstate.isrealtime ? 0 : 1]
+  
+    
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //// RSI
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-rsi_len = input.int(14, minval = 1, title = "Period", inline="rsi", group = 'RSI')
+rsi_bands = rsi_active ? true : marketcap_rsi_active ? true : false
+
+// hlines
+plot(rsi_bands ? 70 : na, 'High', color=color_high_low, linewidth=1)
+hline(rsi_bands ? 50 : na, 'Medium', color=color_middle, linewidth=1)
+plot(rsi_bands ? 30 : na, 'Low', color=color_high_low, linewidth=1)
+
+// inputs
+period_length = input.int(21, 'Period', inline="rsi", group = 'RSI')
 rsi_color  = input(color.yellow, "", inline="rsi", group="RSI")
-rsi_up = ta.rma(math.max(ta.change(close), 0), rsi_len)
-rsi_down = ta.rma(-math.min(ta.change(close), 0), rsi_len)
-rsi_rsi = rsi_down == 0 ? 100 : rsi_up == 0 ? 0 : 100 - (100 / (1 + rsi_up / rsi_down))
-plot(rsi_active ? rsi_rsi : na, "Ligne RSI", color=rsi_color, linewidth=2)
-rsi_band1 = plot(rsi_active ? 70 : na, "High", color=color_high_low, linewidth=1)
-rsi_bandm = hline(rsi_active ? 50 : na, "Medium", color=color_middle, linewidth=1)
-rsi_band0 = plot(rsi_active ? 30 : na, "Low", color=color_high_low, linewidth=1)
-// fill(rsi_band1, rsi_band0, color = color.rgb(126, 87, 194, 90), title = "Background")
+  
+current_cap = securityNoRepaint('', timeframe.period, close)
+rsi_current = ta.rsi(current_cap, period_length)
+plot(rsi_active ? rsi_current : na, 'RSI', color=rsi_color, linewidth=2)
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//// Marketcap
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// inputs
+leader_market_cap = input.symbol(title='BTC Market Cap', inline="leader_market_cap", defval='CRYPTOCAP:BTC', group='Market Cap')
+leader_market_cap_color  = input(color.orange, "", inline="leader_market_cap", group="Market Cap")
+alt_market_cap = input.symbol(title='Altcoin Market Cap', inline="alt_market_cap", defval='CRYPTOCAP:TOTAL3', group='Market Cap')
+alt_market_cap_color  = input(color.blue, "", inline="alt_market_cap", group="Market Cap")
+
+// Get BTC & alt market caps
+leader_cap = securityNoRepaint(leader_market_cap, timeframe.period, close)
+alt_cap = securityNoRepaint(alt_market_cap, timeframe.period, close)
+
+// RSI
+rsi_leader = ta.rsi(leader_cap, period_length)
+rsi_alt = ta.rsi(alt_cap, period_length)
+
+// Plot
+plot(marketcap_rsi_active ? rsi_leader : na, 'BTC Marketcap RSI', color=leader_market_cap_color, linewidth=2)
+plot(marketcap_rsi_active ? rsi_alt : na, 'Altcoin  Marketcap RSI', color=alt_market_cap_color, linewidth=2)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,51 +141,15 @@ plot(flow_active ? vfi: na, title="vfi", color=vfi_color, linewidth=2)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-//// Marketcap
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-// inputs
-marketcap_length = input.int(21, 'Period', group = 'Market Cap')
-leader_market_cap = input.symbol(title='BTC Market Cap', inline="leader_market_cap", defval='CRYPTOCAP:BTC', group='Market Cap')
-leader_market_cap_color  = input(color.orange, "", inline="leader_market_cap", group="Market Cap")
-alt_market_cap = input.symbol(title='Altcoin Market Cap', inline="alt_market_cap", defval='CRYPTOCAP:TOTAL3', group='Market Cap')
-alt_market_cap_color  = input(color.blue, "", inline="alt_market_cap", group="Market Cap")
-// custom_market_cap = input.symbol(title='Custom Market Cap', inline="custom_market_cap_color", defval='', group='Market Cap')
-custom_market_cap_color  = input(color.yellow, "Current Crypto Market Cap", inline="custom_market_cap_color", group="Market Cap")
-
-securityNoRepaint(sym, tf, src) =>
-    request.security(sym, tf, src[barstate.isrealtime ? 1 : 0])[barstate.isrealtime ? 0 : 1]
-    
-// Get BTC & alt market caps
-leader_cap = securityNoRepaint(leader_market_cap, timeframe.period, close)
-alt_cap = securityNoRepaint(alt_market_cap, timeframe.period, close)
-custom_cap = securityNoRepaint('', timeframe.period, close)
-
-// hlines
-plot(marketcap_rsi_active ? 70 : na, 'High', color=color_high_low, linewidth=1)
-hline(marketcap_rsi_active ? 50 : na, 'Medium', color=color_middle, linewidth=1)
-plot(marketcap_rsi_active ? 30 : na, 'Low', color=color_high_low, linewidth=1)
-
-// RSI
-rsi_leader = ta.rsi(leader_cap, marketcap_length)
-rsi_alt = ta.rsi(alt_cap, marketcap_length)
-rsi_custom = ta.rsi(custom_cap, marketcap_length)
-
-// Plot
-plot(marketcap_rsi_active ? rsi_leader : na, 'BTC Marketcap RSI', color=leader_market_cap_color, linewidth=2)
-plot(marketcap_rsi_active ? rsi_alt : na, 'Altcoin  Marketcap RSI', color=alt_market_cap_color, linewidth=2)
-plot(marketcap_rsi_active ? rsi_custom : na, 'Custom Marketcap RSI', color=custom_market_cap_color, linewidth=3)
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 //// Marketcap Oscillator
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 market_cap_oscillator  = input.int(100, "Oscillator", group="Market Cap")
 
 // calculate
-leader_oscillator = market_cap_oscillator - leader_cap[marketcap_length] / leader_cap * 100
-alt_oscillator = market_cap_oscillator - alt_cap[marketcap_length] / alt_cap * 100
-custom_oscillator = market_cap_oscillator - custom_cap[marketcap_length] / custom_cap * 100
+leader_oscillator = market_cap_oscillator - leader_cap[period_length] / leader_cap * 100
+alt_oscillator = market_cap_oscillator - alt_cap[period_length] / alt_cap * 100
+custom_oscillator = market_cap_oscillator - current_cap[period_length] / current_cap * 100
 
 marketcap_oscillator_high = 20
 marketcap_oscillator_medium = 0
