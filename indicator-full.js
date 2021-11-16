@@ -3,8 +3,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //// Definition
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-indicator(title          = "Main Indicators", 
-     shorttitle      = "MI", 
+indicator(title          = "Indicator Full", 
+     shorttitle      = "IF", 
      overlay         = true,
      // resolution      = "", 
     // VP
@@ -62,14 +62,14 @@ ma8_length = input.int(55, "", inline="MA #8", minval=1, group="Ruban Moyennes M
 ma8_color  = input(#aa2707, "", inline="MA #8", group="Ruban Moyennes Mobiles")
 ma8_active = input.bool(true, "", inline = "MA #8", group = "Ruban Moyennes Mobiles")
 
-plot(mar_active ? ma(ma1_length, ma1_type, ma1_active) : na, title="MA-1", color=ma1_color, linewidth=2)
-plot(mar_active ? ma(ma2_length, ma2_type, ma2_active) : na, title="MA-2", color=ma2_color, linewidth=2)
-plot(mar_active ? ma(ma3_length, ma3_type, ma3_active) : na, title="MA-3", color=ma3_color, linewidth=2)
-plot(mar_active ? ma(ma4_length, ma4_type, ma4_active) : na, title="MA-4", color=ma4_color, linewidth=2)
-plot(mar_active ? ma(ma5_length, ma5_type, ma5_active) : na, title="MA-5", color=ma5_color, linewidth=2)
-plot(mar_active ? ma(ma6_length, ma6_type, ma6_active) : na, title="MA-6", color=ma6_color, linewidth=2)
-plot(mar_active ? ma(ma7_length, ma7_type, ma7_active) : na, title="MA-7", color=ma7_color, linewidth=2)
-plot(mar_active ? ma(ma8_length, ma8_type, ma8_active) : na, title="MA-8", color=ma8_color, linewidth=2)
+plot(mar_active ? ma(ma1_length, ma1_type, ma1_active) : na, title="RUB-MA-1", color=ma1_color, linewidth=2)
+plot(mar_active ? ma(ma2_length, ma2_type, ma2_active) : na, title="RUB-MA-2", color=ma2_color, linewidth=2)
+plot(mar_active ? ma(ma3_length, ma3_type, ma3_active) : na, title="RUB-MA-3", color=ma3_color, linewidth=2)
+plot(mar_active ? ma(ma4_length, ma4_type, ma4_active) : na, title="RUB-MA-4", color=ma4_color, linewidth=2)
+plot(mar_active ? ma(ma5_length, ma5_type, ma5_active) : na, title="RUB-MA-5", color=ma5_color, linewidth=2)
+plot(mar_active ? ma(ma6_length, ma6_type, ma6_active) : na, title="RUB-MA-6", color=ma6_color, linewidth=2)
+plot(mar_active ? ma(ma7_length, ma7_type, ma7_active) : na, title="RUB-MA-7", color=ma7_color, linewidth=2)
+plot(mar_active ? ma(ma8_length, ma8_type, ma8_active) : na, title="RUB-MA-8", color=ma8_color, linewidth=2)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,19 +77,19 @@ plot(mar_active ? ma(ma8_length, ma8_type, ma8_active) : na, title="MA-8", color
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 ma9_type   = input.string("EMA", title="MA-9", inline="MA #9", options=["SMA", "EMA"], group="Moyennes Mobiles Personnalisées")
-ma9_length = input.int(7, "", inline="MA #9", minval=1, group="Moyennes Mobiles Personnalisées")
+ma9_length = input.int(21, "", inline="MA #9", minval=1, group="Moyennes Mobiles Personnalisées")
 ma9_color  = input(#f6c309, "", inline="MA #9", group="Moyennes Mobiles Personnalisées")
 ma9_active  = input.bool(true, "", inline="MA #9", group="Moyennes Mobiles Personnalisées")
 ma10_type   = input.string("EMA", title="MA-10", inline="MA #10", options=["SMA", "EMA"], group="Moyennes Mobiles Personnalisées")
-ma10_length = input.int(100, "", inline="MA #10", minval=1, group="Moyennes Mobiles Personnalisées")
+ma10_length = input.int(50, "", inline="MA #10", minval=1, group="Moyennes Mobiles Personnalisées")
 ma10_color  = input(#f6c309, "", inline="MA #10", group="Moyennes Mobiles Personnalisées")
 ma10_active  = input.bool(true, "", inline="MA #10", group="Moyennes Mobiles Personnalisées")
 ma11_type   = input.string("EMA", title="MA-11", inline="MA #11", options=["SMA", "EMA"], group="Moyennes Mobiles Personnalisées")
-ma11_length = input.int(200, "", inline="MA #11", minval=1, group="Moyennes Mobiles Personnalisées")
+ma11_length = input.int(100, "", inline="MA #11", minval=1, group="Moyennes Mobiles Personnalisées")
 ma11_color  = input(#f6c309, "", inline="MA #11", group="Moyennes Mobiles Personnalisées")
 ma11_active  = input.bool(true, "", inline="MA #11", group="Moyennes Mobiles Personnalisées")
 ma12_type   = input.string("EMA", title="MA-12", inline="MA #12", options=["SMA", "EMA"], group="Moyennes Mobiles Personnalisées")
-ma12_length = input.int(1000, "", inline="MA #12", minval=1, group="Moyennes Mobiles Personnalisées")
+ma12_length = input.int(200, "", inline="MA #12", minval=1, group="Moyennes Mobiles Personnalisées")
 ma12_color  = input(#f6c309, "", inline="MA #12", group="Moyennes Mobiles Personnalisées")
 ma12_active  = input.bool(true, "", inline="MA #12", group="Moyennes Mobiles Personnalisées")
 

@@ -1,5 +1,5 @@
 //@version=5
-indicator(title="RSI", shorttitle="RSI", format=format.price, precision=2)
+indicator(title="Indicator Full 2", shorttitle="IF", format=format.price, precision=2)
 
 soc_active  = input.bool(true, title="Activer le Sochastique")
 rsi_active  = input.bool(true, title="Activer le RSI")
