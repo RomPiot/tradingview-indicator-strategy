@@ -87,13 +87,16 @@ leader_market_cap = input.symbol(title='BTC Market Cap', inline="leader_market_c
 leader_market_cap_color  = input(color.orange, "", inline="leader_market_cap", group="Market Cap")
 alt_market_cap = input.symbol(title='Altcoin Market Cap', inline="alt_market_cap", defval='CRYPTOCAP:TOTAL3', group='Market Cap')
 alt_market_cap_color  = input(color.blue, "", inline="alt_market_cap", group="Market Cap")
-custom_market_cap = input.symbol(title='Custom Market Cap', inline="custom_market_cap_color", defval='CRYPTOCAP:DOT', group='Market Cap')
+custom_market_cap = input.symbol(title='Custom Market Cap', inline="custom_market_cap_color", defval='', group='Market Cap')
 custom_market_cap_color  = input(color.yellow, "", inline="custom_market_cap_color", group="Market Cap")
 
+securityNoRepaint(sym, tf, src) =>
+    request.security(sym, tf, src[barstate.isrealtime ? 1 : 0])[barstate.isrealtime ? 0 : 1]
+    
 // Get BTC & alt market caps
-leader_cap = request.security(leader_market_cap, timeframe=timeframe.period, expression=close)
-alt_cap = request.security(alt_market_cap, timeframe=timeframe.period, expression=close)
-custom_cap = request.security(custom_market_cap, timeframe=timeframe.period, expression=close)
+leader_cap = securityNoRepaint(leader_market_cap, timeframe.period, close)
+alt_cap = securityNoRepaint(alt_market_cap, timeframe.period, close)
+custom_cap = securityNoRepaint(custom_market_cap, timeframe.period, close)
 
 // hlines
 plot(marketcap_rsi_active ? 70 : na, 'High', color=color_high_low, linewidth=1)
