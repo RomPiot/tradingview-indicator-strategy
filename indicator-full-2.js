@@ -1,14 +1,62 @@
 //@version=5
 indicator(title="Indicator Full 2", shorttitle="IF", format=format.price, precision=2)
 
-soc_active  = input.bool(true, title="Activer le Sochastique")
 rsi_active  = input.bool(true, title="Activer le RSI")
+macd_active  = input.bool(true, title="Activer le MACD")
+soc_active  = input.bool(true, title="Activer le Stochastique")
 flow_active  = input.bool(true, title="Activer le Volume Flow")
 marketcap_rsi_active  = input.bool(true, title="Activer le Marketcap RSI")
 marketcap_oscillator_active  = input.bool(true, title="Activer le Marketcap Oscillator")
-
 color_high_low  = input(#9C27B0, "Couleur des bandes hautes et basse")
 color_middle  = input(#BA68C8, "Couleur centrale")
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//// RSI
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+rsi_len = input.int(14, minval = 1, title = "Period", inline="rsi", group = 'RSI')
+rsi_color  = input(color.yellow, "", inline="rsi", group="RSI")
+rsi_up = ta.rma(math.max(ta.change(close), 0), rsi_len)
+rsi_down = ta.rma(-math.min(ta.change(close), 0), rsi_len)
+rsi_rsi = rsi_down == 0 ? 100 : rsi_up == 0 ? 0 : 100 - (100 / (1 + rsi_up / rsi_down))
+plot(rsi_active ? rsi_rsi : na, "Ligne RSI", color=rsi_color, linewidth=2)
+rsi_band1 = plot(rsi_active ? 70 : na, "High", color=color_high_low, linewidth=1)
+rsi_bandm = hline(rsi_active ? 50 : na, "Medium", color=color_middle, linewidth=1)
+rsi_band0 = plot(rsi_active ? 30 : na, "Low", color=color_high_low, linewidth=1)
+// fill(rsi_band1, rsi_band0, color = color.rgb(126, 87, 194, 90), title = "Background")
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+//// MACD
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Getting inputs
+macd_fast_length = input(title="Fast Length", defval=12, group="MACD")
+macd_slow_length = input(title="Slow Length", defval=26, group="MACD")
+macd_signal_length = input.int(title="Signal Smoothing",  minval = 1, maxval = 50, defval = 9, group="MACD")
+macd_sma_source = input.string(title="Oscillator MA Type",  defval="EMA", options=["SMA", "EMA"], group="MACD")
+macd_sma_signal = input.string(title="Signal Line MA Type", defval="EMA", options=["SMA", "EMA"], group="MACD")
+
+// Plot colors
+macd_col_macd = input(#2962FF, "MACD Line  ", inline="MACD", group="MACD")
+macd_col_signal = input(#FF6D00, "Signal Line  ", inline="Signal", group="MACD")
+macd_col_grow_above = input(#26A69A, "Above   Grow", inline="Above", group="MACD")
+macd_col_fall_above = input(#B2DFDB, "Fall", inline="Above", group="MACD")
+macd_col_grow_below = input(#FFCDD2, "Below Grow", inline="Below", group="MACD")
+macd_col_fall_below = input(#FF5252, "Fall", inline="Below", group="MACD")
+
+// Calculating
+macd_fast_ma = macd_sma_source == "SMA" ? ta.sma(close, macd_fast_length) : ta.ema(close, macd_fast_length)
+macd_slow_ma = macd_sma_source == "SMA" ? ta.sma(close, macd_slow_length) : ta.ema(close, macd_slow_length)
+macd_macd = macd_fast_ma - macd_slow_ma
+macd_signal = macd_sma_signal == "SMA" ? ta.sma(macd_macd, macd_signal_length) : ta.ema(macd_macd, macd_signal_length)
+macd_hist = macd_macd - macd_signal
+
+plot(macd_active ? macd_hist : na, title="Histogram", style=plot.style_columns, color=(macd_hist>=0 ? (macd_hist[1] < macd_hist ? macd_col_grow_above : macd_col_fall_above) : (macd_hist[1] < macd_hist ? macd_col_grow_below : macd_col_fall_below)))
+plot(macd_active ? macd_macd : na, title="MACD", color=macd_col_macd)
+plot(macd_active ? macd_signal : na, title = "Signal", color = macd_col_signal)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //// Stochastic
@@ -28,21 +76,6 @@ stoch_hm = hline(soc_active ? 50 : na, "Medium", color=color_middle)
 stoch_h1 = plot(soc_active ? 20 : na, "Low", color=color_high_low, linewidth=1)
 // fill(stoch_h0, stoch_h1, color=color.rgb(33, 150, 243, 90), title="Background", group='Stochastic')
 
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-//// RSI
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
-rsi_len = input.int(14, minval = 1, title = "Period", inline="rsi", group = 'RSI')
-rsi_color  = input(color.yellow, "", inline="rsi", group="RSI")
-rsi_up = ta.rma(math.max(ta.change(close), 0), rsi_len)
-rsi_down = ta.rma(-math.min(ta.change(close), 0), rsi_len)
-rsi_rsi = rsi_down == 0 ? 100 : rsi_up == 0 ? 0 : 100 - (100 / (1 + rsi_up / rsi_down))
-plot(rsi_active ? rsi_rsi : na, "Ligne RSI", color=rsi_color, linewidth=2)
-rsi_band1 = plot(rsi_active ? 70 : na, "High", color=color_high_low, linewidth=1)
-rsi_bandm = hline(rsi_active ? 50 : na, "Medium", color=color_middle, linewidth=1)
-rsi_band0 = plot(rsi_active ? 30 : na, "Low", color=color_high_low, linewidth=1)
-// fill(rsi_band1, rsi_band0, color = color.rgb(126, 87, 194, 90), title = "Background")
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 //// Volume Flow
@@ -82,7 +115,6 @@ plot(flow_active ? vfi: na, title="vfi", color=vfi_color, linewidth=2)
 
 // inputs
 marketcap_length = input.int(21, 'Period', group = 'Market Cap')
-
 leader_market_cap = input.symbol(title='BTC Market Cap', inline="leader_market_cap", defval='CRYPTOCAP:BTC', group='Market Cap')
 leader_market_cap_color  = input(color.orange, "", inline="leader_market_cap", group="Market Cap")
 alt_market_cap = input.symbol(title='Altcoin Market Cap', inline="alt_market_cap", defval='CRYPTOCAP:TOTAL3', group='Market Cap')
@@ -119,7 +151,7 @@ plot(marketcap_rsi_active ? rsi_custom : na, 'Custom Marketcap RSI', color=custo
 
 market_cap_oscillator  = input.int(100, "Oscillator", group="Market Cap")
 
-// base 100
+// calculate
 leader_oscillator = market_cap_oscillator - leader_cap[marketcap_length] / leader_cap * 100
 alt_oscillator = market_cap_oscillator - alt_cap[marketcap_length] / alt_cap * 100
 custom_oscillator = market_cap_oscillator - custom_cap[marketcap_length] / custom_cap * 100
@@ -128,7 +160,7 @@ marketcap_oscillator_high = 20
 marketcap_oscillator_medium = 0
 marketcap_oscillator_low = -20
 
-// plot BTC and Alt market cap 100 base
+// plot BTC and Alt market cap 
 grad = color.from_gradient(marketcap_oscillator_active ? custom_oscillator : na, marketcap_oscillator_low, marketcap_oscillator_high, color.lime, color.red)
 plot(marketcap_oscillator_active ? leader_oscillator : na, color=leader_market_cap_color, title='BTC Marketcap Oscillator', linewidth=2)
 plot(marketcap_oscillator_active ? alt_oscillator : na, color=alt_market_cap_color, title='Altcoin Marketcap Oscillator', linewidth=2)
